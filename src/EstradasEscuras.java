@@ -3,8 +3,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class EstradasEscuras {
 	
@@ -26,44 +24,44 @@ public class EstradasEscuras {
 				return 2 * i + 2;
 			}
 
-			public void heapSort(ArrayList<Aresta> A) {
+			public void heapSort(Aresta[] A) {
 				buildHeap(A);
-				for(int i = A.size() - 1; i > 0; i--) {
-					Aresta temp = A.get(0);					
-					A.set(0, A.get(i));
-					A.set(i, temp);					
+				for(int i = A.length - 1; i > 0; i--) {
+					Aresta temp = A[0];
+					A[0] = A[i];
+					A[i] = temp;
 					this.size--;
 					Heapify(A, 0);			
 				}
 			}
 
-			public void buildHeap(ArrayList<Aresta> A) {
-				this.size = A.size();
-				for(int x = A.size() / 2 - 1; x >= 0; x--) {
+			public void buildHeap(Aresta[] A) {
+				this.size = A.length;
+				for(int x = A.length / 2 - 1; x >= 0; x--) {
 					Heapify(A, x);
 				}
 			}
 
-			public void Heapify(ArrayList<Aresta> A, int i) {
+			public void Heapify(Aresta[] A, int i) {
 				int l = esquerda(i);
 				int r = direita(i);
 				int menor = 0;
 				
-				if(l < this.size && A.get(l).peso > A.get(i).peso) {
+				if(l < this.size && A[l].peso > A[i].peso) {
 					menor = l;
 				}
 				else {
 					menor = i;
 				}
 				
-				if(r < this.size && A.get(r).peso > A.get(menor).peso) {
+				if(r < this.size && A[r].peso > A[menor].peso) {
 					menor = r;
 				}
-
+				
 				if(menor != i) {
-					Aresta temp = A.get(i);
-					A.set(i, A.get(menor));
-					A.set(menor, temp);
+					Aresta temp = A[i];
+					A[i] = A[menor];
+					A[menor] = temp;
 					Heapify(A, menor);
 				}
 			}
@@ -122,22 +120,19 @@ public class EstradasEscuras {
 			
 			public int quantConjunto() {
 				return this.cnt;
-			}
-		
+			}	
 		}
 
-		private ArrayList<Integer> vertices;
-		private ArrayList<Aresta> arestas;
+		private Aresta[] arestas;
+		private int quantVertices;
+		private int quantAresta;
 		private int menorCaminho;
 
 		public Grafo(int n, int m) {
-			this.vertices = new ArrayList<Integer>(n);
-			this.arestas = new ArrayList<Aresta>(m);
+			this.arestas = new Aresta[m];
+			this.quantVertices = n;
 			this.menorCaminho = 0;
-
-			for(int x = 0; x < n; x++) {
-				vertices.add(x);
-			}
+			this.quantAresta = 0;
 		}
 		
 		public void addAresta(int origem, int destino, int peso) {
@@ -145,7 +140,8 @@ public class EstradasEscuras {
 			aresta.origem = origem;
 			aresta.destino = destino;
 			aresta.peso = peso;
-			this.arestas.add(aresta);
+			this.arestas[quantAresta] = aresta;
+			quantAresta++;
 		}
 		
 		public void ordenaArestas() {
@@ -153,28 +149,39 @@ public class EstradasEscuras {
 			heap.heapSort(this.arestas);
 		}
 		
+		public String toString() {
+			String s = "";
+			for(Aresta a : this.arestas) {
+				s += a.origem + "-" + a.destino + " : " + a.peso + "\n";
+			}
+			return s;
+		}
+		
 		public void kruskal() {
 			//ordenas as arestas em ordem crescente;
 			ordenaArestas();
 			//inicia o conjunto disjunto
-			DisjointSet conjuntoDisjunto = new DisjointSet(vertices.size());
-			//lista com as arestas selecionadas
-			LinkedList<Aresta> A = new LinkedList<Aresta>();
+			DisjointSet conjuntoDisjunto = new DisjointSet(quantVertices);
+//			//lista com as arestas selecionadas
+
 			
-			while((this.arestas.size() != 0) && (conjuntoDisjunto.quantConjunto() != 1)) {
-				Aresta a = this.arestas.remove(0);
+			int contadorFila = 0;
+			
+			while((contadorFila < this.arestas.length) && (conjuntoDisjunto.quantConjunto() != 1)) {
+				Aresta a = this.arestas[contadorFila];
 				
 				if(conjuntoDisjunto.find(a.origem) != conjuntoDisjunto.find(a.destino)) {
-					A.add(a);
+
 					conjuntoDisjunto.union(a.origem, a.destino);
 					this.menorCaminho += a.peso;
 				}
+				contadorFila++;
 			}			
 		}
 	}
 	
 	public static void main(String[] args) throws IOException {
-
+		
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 		BufferedWriter output = new BufferedWriter(new OutputStreamWriter(System.out));
 		
@@ -201,16 +208,19 @@ public class EstradasEscuras {
 				grafo.addAresta(Integer.parseInt(aresta[0]), Integer.parseInt(aresta[1]), Integer.parseInt(aresta[2]));
 				custoTotal += Integer.parseInt(aresta[2]);
 			}
+			
 			grafo.kruskal();			
 			
 			valorEconomizado = custoTotal - grafo.menorCaminho;
+			
+			
 			
 			output.write("" + valorEconomizado);
 			output.newLine();			
 			
 			entrada = input.readLine();
 		}
-		
+
 		output.flush();
 		output.close();
 	}
